@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>CheckIn-Training</title>
+    <link
+      rel="icon"
+      href="https://i.postimg.cc/ZKppCbTk/verification.png"
+      type="image/png"
+    />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/localforage@1.10.0/dist/localforage.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <link rel="stylesheet" href="style.css" />
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Kantumruy Pro"', "sans-serif"],
+            },
+            colors: {
+              primary: {
+                50: "#eff6ff",
+                100: "#dbeafe",
+                500: "#3b82f6",
+                600: "#2563eb",
+                700: "#1d4ed8",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body
+    class="bg-gray-50 min-h-screen flex items-center justify-center font-sans antialiased text-slate-800 selection:bg-primary-100"
+  >
+    <div
+      class="w-full h-[100dvh] md:h-[850px] md:w-[420px] bg-white md:rounded-[3rem] shadow-2xl overflow-hidden flex flex-col relative ring-8 ring-black/5"
+    >
+      <div
+        id="loadingView"
+        class="view absolute inset-0 z-50 bg-white flex flex-col items-center justify-center"
+      >
+        <div class="relative w-28 h-28 mb-6">
+          <div
+            class="absolute inset-0 bg-primary-100 rounded-full animate-ping opacity-75"
+          ></div>
+          <div
+            class="relative bg-white rounded-full p-4 shadow-xl border border-gray-100"
+          >
+            <img
+              src="./Images/DI.png"
+              alt="Logo"
+              class="w-full h-full object-contain"
+            />
+          </div>
+        </div>
+        <div class="flex flex-col items-center space-y-3">
+          <div
+            class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-8 w-8"
+          ></div>
+          <p
+            id="loadingText"
+            class="text-sm font-medium text-slate-500 animate-pulse"
+          >
+            កំពុងរៀបចំទិន្នន័យ...
+          </p>
+        </div>
+      </div>
+
+      <div
+        id="startView"
+        class="view flex-1 flex flex-col bg-gray-50 items-center justify-center relative"
+        style="display: none"
+      >
+        <div class="flex flex-col items-center mb-10">
+          <div
+            class="w-24 h-24 bg-white rounded-[2rem] shadow-xl shadow-blue-100 flex items-center justify-center mb-6 relative"
+          >
+            <div
+              class="absolute inset-0 bg-blue-500 rounded-[2rem] opacity-5"
+            ></div>
+            <img src="./Images/DI.png" class="w-14 h-14 object-contain" />
+          </div>
+          <h1 class="text-2xl font-bold text-slate-800">CheckIn-Training</h1>
+          <p class="text-slate-400 text-sm mt-1">
+            ប្រព័ន្ធកត់ត្រាវត្តមានឆ្លាតវៃ
+          </p>
+        </div>
+
+        <div class="relative group">
+          <div
+            class="absolute inset-0 bg-blue-400 rounded-full blur opacity-20 group-hover:opacity-40 transition-opacity duration-500 animate-pulse"
+          ></div>
+          <button
+            id="startScanButton"
+            class="relative w-40 h-40 bg-white rounded-full flex flex-col items-center justify-center shadow-2xl shadow-blue-200/50 border-4 border-white active:scale-95 transition-all duration-300"
+            disabled
+          >
+            <div
+              id="scanBtnIconWrapper"
+              class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2 text-gray-400"
+            >
+              <i class="ph-fill ph-face-viewfinder text-3xl"></i>
+            </div>
+            <span id="scanBtnText" class="text-sm font-bold text-slate-400"
+              >កំពុងរៀបចំ...</span
+            >
+          </button>
+        </div>
+
+        <div
+          class="mt-10 px-6 py-2 bg-white/60 backdrop-blur-sm rounded-full border border-white/50 shadow-sm"
+        >
+          <p
+            id="aiLoadingStatus"
+            class="text-xs font-medium text-slate-400 flex items-center gap-2"
+          >
+            <span
+              class="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"
+            ></span>
+            កំពុងរៀបចំទិន្នន័យ AI...
+          </p>
+        </div>
+        <div class="absolute bottom-6 text-[10px] text-slate-300">
+          Power by Digital Industry
+        </div>
+      </div>
+
+      <div
+        id="homeView"
+        class="view flex-1 flex flex-col bg-[#F8FAFC] overflow-hidden relative"
+        style="display: none"
+      >
+        <div
+          class="absolute top-0 w-full h-[280px] bg-gradient-to-br from-primary-600 to-indigo-600 rounded-b-[40px] z-0 overflow-hidden"
+        >
+          <div
+            class="absolute top-[-20%] left-[-20%] w-[400px] h-[400px] rounded-full bg-white/10 blur-3xl"
+          ></div>
+          <div
+            class="absolute bottom-[10%] right-[-10%] w-[200px] h-[200px] rounded-full bg-white/10 blur-2xl"
+          ></div>
+        </div>
+
+        <div
+          class="relative z-10 px-6 pt-10 pb-2 flex justify-between items-start"
+        >
+          <div class="text-white">
+            <p class="text-primary-100 text-xs font-medium mb-0.5 opacity-90">
+              សួស្តី,
+            </p>
+            <h1
+              id="welcomeMessage"
+              class="text-xl font-bold tracking-tight truncate max-w-[200px]"
+            >
+              ...
+            </h1>
+          </div>
+          <div class="flex gap-2">
+            <button
+              id="logoutButton"
+              class="w-9 h-9 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 active:scale-95 transition-all shadow-lg border border-white/10"
+            >
+              <i class="ph-bold ph-sign-out"></i>
+            </button>
+            <button
+              id="exitAppButton"
+              class="w-9 h-9 flex items-center justify-center bg-red-500/20 backdrop-blur-md rounded-full text-red-50 hover:bg-red-50 active:scale-95 transition-all border border-white/10"
+            >
+              <i class="ph-bold ph-power"></i>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="relative z-10 flex-1 overflow-y-auto px-6 pb-24 no-scrollbar pt-12"
+        >
+          <div
+            class="bg-white rounded-[1.8rem] p-4 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.06)] mb-3 relative border border-gray-50"
+          >
+            <div class="absolute top-3 right-4">
+              <span
+                id="profileId"
+                class="text-[9px] font-bold text-slate-400 bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md"
+                >ID: ...</span
+              >
+            </div>
+            <div class="flex flex-col items-center -mt-8">
+              <div class="relative">
+                <div
+                  class="w-20 h-20 rounded-full p-1 bg-white shadow-lg ring-4 ring-primary-50"
+                >
+                  <img
+                    id="profileImage"
+                    src=""
+                    class="w-full h-full rounded-full object-cover bg-gray-200"
+                  />
+                </div>
+                <div
+                  class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-[3px] border-white rounded-full flex items-center justify-center shadow-md"
+                >
+                  <i class="ph-bold ph-check text-[10px] text-white"></i>
+                </div>
+              </div>
+              <h2
+                id="profileName"
+                class="text-base font-bold text-slate-800 mt-1"
+              >
+                ...
+              </h2>
+              <p
+                id="profileDepartment"
+                class="text-[11px] text-slate-500 font-medium mb-2 px-3 py-0.5 bg-gray-50 rounded-full mt-0.5"
+              >
+                ...
+              </p>
+
+              <div class="w-full grid grid-cols-2 gap-2">
+                <div
+                  class="bg-gray-50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-gray-100"
+                >
+                  <span class="text-[9px] text-slate-400">ក្រុម</span>
+                  <span
+                    id="profileGroup"
+                    class="text-xs font-bold text-slate-700 truncate max-w-full"
+                    >...</span
+                  >
+                </div>
+                <div
+                  class="bg-primary-50 rounded-xl p-2.5 flex flex-col items-center justify-center border border-primary-100 relative overflow-hidden"
+                >
+                  <div
+                    id="shiftStatusIndicator"
+                    class="absolute top-1 right-1 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse hidden"
+                  ></div>
+                  <span class="text-[9px] text-primary-400">វេនការងារ</span>
+                  <span
+                    id="profileShift"
+                    class="text-xs font-bold text-primary-700 truncate max-w-full"
+                    >...</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="dynamicActionArea" class="mb-3">
+            <div
+              id="actionButtonContainer"
+              class="hidden transform transition-all duration-300"
+            >
+              <button
+                id="mainActionButton"
+                class="w-full group relative overflow-hidden rounded-[1.8rem] p-1 shadow-lg shadow-primary-200/40 transition-all active:scale-95 hover:shadow-xl"
+              >
+                <div
+                  class="relative bg-white rounded-[1.6rem] p-3.5 overflow-hidden"
+                >
+                  <div
+                    id="actionBtnBg"
+                    class="absolute inset-0 bg-gradient-to-r from-primary-500 to-indigo-600 opacity-10 transition-all duration-500"
+                  ></div>
+                  <div class="relative z-10 flex items-center justify-between">
+                    <div class="flex flex-col items-start pl-2">
+                      <span
+                        id="actionBtnTitle"
+                        class="text-lg font-bold text-slate-800 group-hover:text-primary-600 transition-colors"
+                        >Check In</span
+                      >
+                      <span
+                        id="actionBtnSubtitle"
+                        class="text-slate-400 text-[10px] font-medium"
+                        >ចុចទីនេះដើម្បីកត់ត្រា</span
+                      >
+                    </div>
+                    <div
+                      class="w-12 h-12 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-primary-200 group-hover:scale-110 transition-transform duration-300"
+                    >
+                      <i
+                        id="actionBtnIcon"
+                        class="ph-fill ph-sign-in text-xl"
+                      ></i>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div id="statusMessageContainer" class="hidden">
+              <div
+                class="relative overflow-hidden bg-white rounded-[1.8rem] p-4 text-center border border-gray-100 shadow-sm"
+              >
+                <div
+                  id="statusIconBg"
+                  class="w-10 h-10 mx-auto bg-gray-50 rounded-full flex items-center justify-center mb-2 text-gray-400"
+                >
+                  <i id="statusIcon" class="ph-duotone ph-coffee text-xl"></i>
+                </div>
+                <h3 id="statusTitle" class="text-sm font-bold text-slate-700">
+                  ក្រៅម៉ោងការងារ
+                </h3>
+                <p id="statusDesc" class="text-[10px] text-slate-400 mt-0.5">
+                  សូមរង់ចាំដល់ម៉ោងកំណត់
+                </p>
+              </div>
+            </div>
+
+            <div id="noShiftContainer" class="hidden text-center py-8">
+              <div
+                class="w-full bg-white/50 border-2 border-dashed border-gray-200 rounded-[1.5rem] p-4 flex flex-col items-center"
+              >
+                <div
+                  class="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-2"
+                >
+                  <i
+                    class="ph-duotone ph-calendar-x text-2xl text-blue-300"
+                  ></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-700">
+                  គ្មានវេនការងារទេ
+                </h3>
+                <p class="text-[10px] text-slate-400 mt-0.5">
+                  ថ្ងៃនេះអ្នកមិនមានវេនការងារទេ។
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div id="todayActivitySection">
+            <div class="flex items-center justify-between mb-2 px-1">
+              <h3
+                class="text-xs font-bold text-slate-700 flex items-center gap-1.5"
+              >
+                <i class="ph-duotone ph-list-dashes text-primary-500"></i>
+                សកម្មភាពថ្ងៃនេះ
+              </h3>
+              <span
+                id="dateBadge"
+                class="text-[9px] font-bold text-slate-400 bg-white border border-gray-200 px-2 py-0.5 rounded-md shadow-sm"
+                >...</span
+              >
+            </div>
+            <div id="historyContainer" class="space-y-2"></div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="historyView"
+        class="view flex-1 flex flex-col bg-gray-50"
+        style="display: none"
+      >
+        <div class="px-6 pt-12 pb-6 bg-white shadow-sm z-20 rounded-b-[2.5rem]">
+          <div class="flex justify-between items-center mb-2">
+            <h1 class="text-xl font-bold text-slate-800">ប្រវត្តិវត្តមាន</h1>
+            <div
+              class="w-10 h-10 bg-primary-50 rounded-full flex items-center justify-center text-primary-600"
+            >
+              <i class="ph-duotone ph-clock-counter-clockwise text-xl"></i>
+            </div>
+          </div>
+          <p class="text-slate-400 text-xs">ទិន្នន័យសម្រាប់ខែនេះ</p>
+        </div>
+        <div class="flex-1 overflow-y-auto px-5 py-6 pb-28 no-scrollbar">
+          <div id="monthlyHistoryContainer" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <div
+        id="footerNav"
+        class="absolute bottom-6 left-6 right-6 z-40"
+        style="display: none"
+      >
+        <nav
+          class="bg-white/90 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-1.5 flex justify-between items-center relative"
+        >
+          <button
+            id="navHomeButton"
+            class="nav-button flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 text-slate-400 transition-all hover:bg-gray-50 active-nav"
+          >
+            <i class="ph-fill ph-house text-xl mb-0.5"></i>
+            <span class="text-[11px] font-bold">ទំព័រដើម</span>
+          </button>
+          <div class="w-px h-6 bg-gray-200 mx-1"></div>
+          <button
+            id="navHistoryButton"
+            class="nav-button flex-1 py-3.5 rounded-xl flex items-center justify-center gap-2 text-slate-400 transition-all hover:bg-gray-50"
+          >
+            <i class="ph-fill ph-chart-bar text-xl mb-0.5"></i>
+            <span class="text-[11px] font-bold">ប្រវត្តិ</span>
+          </button>
+        </nav>
+      </div>
+
+      <div
+        id="customModal"
+        class="modal modal-hidden fixed inset-0 z-[60] flex items-center justify-center p-6 bg-slate-900/50 backdrop-blur-sm"
+      >
+        <div
+          class="bg-white rounded-[2rem] shadow-2xl w-full max-w-xs overflow-hidden transform scale-100 transition-all p-6 text-center"
+        ></div>
+      </div>
+
+      <div
+        id="cameraModal"
+        class="modal modal-hidden fixed inset-0 z-[70] flex flex-col bg-black"
+      >
+        <div
+          class="absolute top-0 left-0 right-0 p-6 flex justify-between items-start z-20 bg-gradient-to-b from-black/80 to-transparent"
+        >
+          <div class="text-white pt-2">
+            <h3 class="font-bold text-lg">ស្កេនមុខ</h3>
+            <p class="text-xs text-white/70">សូមដាក់មុខរបស់អ្នកឱ្យចំរង្វង់</p>
+          </div>
+          <button
+            id="cameraCloseButton"
+            class="bg-white/10 backdrop-blur-md text-white rounded-full w-10 h-10 flex items-center justify-center hover:bg-white/20 transition-colors"
+          >
+            <i class="ph-bold ph-x text-lg"></i>
+          </button>
+        </div>
+        <div
+          class="relative flex-1 flex items-center justify-center overflow-hidden bg-gray-900"
+        >
+          <video
+            id="videoElement"
+            autoplay
+            muted
+            playsinline
+            class="absolute inset-0 w-full h-full object-cover opacity-90"
+          ></video>
+          <canvas
+            id="cameraCanvas"
+            class="absolute inset-0 w-full h-full object-cover z-10"
+          ></canvas>
+          <div class="relative z-10 w-72 h-72">
+            <div
+              class="absolute inset-0 border-[3px] border-white/20 rounded-[3rem]"
+            ></div>
+            <div
+              class="absolute top-0 left-0 w-12 h-12 border-t-[4px] border-l-[4px] border-primary-500 rounded-tl-[3rem]"
+            ></div>
+            <div
+              class="absolute top-0 right-0 w-12 h-12 border-t-[4px] border-r-[4px] border-primary-500 rounded-tr-[3rem]"
+            ></div>
+            <div
+              class="absolute bottom-0 left-0 w-12 h-12 border-b-[4px] border-l-[4px] border-primary-500 rounded-bl-[3rem]"
+            ></div>
+            <div
+              class="absolute bottom-0 right-0 w-12 h-12 border-b-[4px] border-r-[4px] border-primary-500 rounded-br-[3rem]"
+            ></div>
+            <div
+              class="absolute w-full h-[2px] bg-primary-400/80 shadow-[0_0_20px_rgba(96,165,250,0.8)] animate-scan top-1/2"
+            ></div>
+          </div>
+        </div>
+        <div
+          class="bg-black/90 pb-10 pt-6 px-6 flex flex-col items-center justify-center relative z-20 rounded-t-[2rem] border-t border-white/10"
+        >
+          <p id="cameraLoadingText" class="text-white font-bold text-lg mb-1">
+            កំពុងរៀបចំ...
+          </p>
+          <p id="cameraHelpText" class="text-white/40 text-xs mb-6">
+            AI កំពុងធ្វើការវិភាគ...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
